@@ -180,18 +180,17 @@ class TaskProcess(multiprocessing.Process):
             status = FAILED
             logger.exception("[pid %s] Worker %s failed    %s", os.getpid(), self.worker_id, self.task)
             self.task.trigger_event(Event.FAILURE, self.task, ex)
-            raw_error_message = self.task.on_failure(ex)
-            expl = json.dumps(raw_error_message)
-            self._send_error_notification(raw_error_message)
+            error_message = self.task.on_failure(ex)
+            expl = json.dumps(error_message)
+            self._send_error_notification(error_message)
         finally:
             self.result_queue.put(
                 (self.task.task_id, status, expl, missing, new_deps))
 
-    def _send_error_notification(self, raw_error_message):
+    def _send_error_notification(self, error_message):
         subject = "Luigi: %s FAILED" % self.task
-        notification_error_message = notifications.wrap_traceback(raw_error_message)
         formatted_error_message = notifications.format_task_error(subject, self.task,
-                                                                  formatted_exception=notification_error_message)
+                                                                  formatted_exception=error_message)
         notifications.send_error_email(subject, formatted_error_message, self.task.owner_email)
 
     def _recursive_terminate(self):
