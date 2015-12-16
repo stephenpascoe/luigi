@@ -122,6 +122,7 @@ class ExceptionFormatTest(unittest.TestCase):
             self.assertIn('<th>name</th><td>{}</td>'.format(task.task_family), body)
             self.assertIn('<div class="highlight"', body)
             self.assertIn('Oops!', body)
+            self.assertRegexpMatches(body, r'.*<span[^>]*>Traceback')
 
             for param, value in task.param_kwargs.items():
                 self.assertIn('<th>{}</th><td>{}</td>'.format(param, value), body)
